@@ -97,7 +97,6 @@ public struct RingSlider<PrimaryTickMark: View, SecondaryTickMark: View>: View {
 
     let content = HStack(spacing: 0) {
       primaryTickMark
-        .foregroundStyle(Color.accentColor)
       Group {
         Spacer(minLength: 0)
         secondaryTickMark
@@ -109,7 +108,6 @@ public struct RingSlider<PrimaryTickMark: View, SecondaryTickMark: View>: View {
         secondaryTickMark
         Spacer(minLength: 0)
       }
-      .foregroundStyle(Color.accentColor.secondary)
     }
       .padding(.vertical, 10)
 
@@ -223,6 +221,7 @@ public struct DefaultPrimaryTickMark: View {
   public var body: some View {
     RoundedRectangle(cornerRadius: 8)
       .frame(width: 3)
+      .foregroundStyle(.primary)
   }
 }
 
@@ -235,6 +234,7 @@ public struct DefaultSecondaryTickMark: View {
   public var body: some View {
     RoundedRectangle(cornerRadius: 8)
       .frame(width: 3)
+      .foregroundStyle(.secondary)
   }
 }
 
