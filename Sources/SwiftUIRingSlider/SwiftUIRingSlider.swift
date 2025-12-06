@@ -1,6 +1,33 @@
 import SwiftUI
 @_spi(Advanced) import SwiftUIIntrospect
 
+/// A SwiftUI view that provides an infinite circular slider for precise value adjustments.
+///
+/// `RingSlider` creates a horizontal scrolling interface that allows users to adjust a numeric value
+/// by scrolling left or right. The slider supports infinite scrolling in both directions and provides
+/// haptic feedback on value changes.
+///
+/// ## Usage
+///
+/// Create a `RingSlider` by providing a binding to a `Double` value:
+///
+/// ```swift
+/// @State private var value: Double = 0
+///
+/// var body: some View {
+///     RingSlider(value: $value)
+/// }
+/// ```
+///
+/// You can customize the stride (increment step) and constrain the value range:
+///
+/// ```swift
+/// RingSlider(
+///     value: $value,
+///     stride: 0.5,
+///     valueRange: 0...100
+/// )
+/// ```
 public struct RingSlider: View {
 
   final class Proxy: ObservableObject {
@@ -30,6 +57,13 @@ public struct RingSlider: View {
   @StateObject private var uiProxy: Proxy = .init()
   private let valueRange: ClosedRange<Double>
 
+  /// Creates a new ring slider.
+  ///
+  /// - Parameters:
+  ///   - value: A binding to the current value of the slider.
+  ///   - stride: The amount to increment or decrement the value per scroll unit. Default is `1`.
+  ///   - valueRange: The range of allowable values for the slider.
+  ///     Default is the full range of `Double` values.
   public init(
     value: Binding<Double>,
     stride: Double = 1,
