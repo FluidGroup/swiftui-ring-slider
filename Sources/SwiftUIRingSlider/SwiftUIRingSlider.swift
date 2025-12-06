@@ -28,7 +28,17 @@ import SwiftUI
 ///     valueRange: 0...100
 /// )
 /// ```
-public struct RingSlider: View {
+///
+/// You can also customize the tick marks:
+///
+/// ```swift
+/// RingSlider(
+///     value: $value,
+///     primaryTickMark: { Circle().frame(width: 4, height: 4) },
+///     secondaryTickMark: { Circle().frame(width: 2, height: 2) }
+/// )
+/// ```
+public struct RingSlider<PrimaryTickMark: View, SecondaryTickMark: View>: View {
 
   final class Proxy: ObservableObject {
     var value: Double = 0 {
@@ -57,37 +67,46 @@ public struct RingSlider: View {
   @StateObject private var uiProxy: Proxy = .init()
   private let valueRange: ClosedRange<Double>
 
-  /// Creates a new ring slider.
+  private let primaryTickMark: PrimaryTickMark
+  private let secondaryTickMark: SecondaryTickMark
+
+  /// Creates a new ring slider with custom tick marks.
   ///
   /// - Parameters:
   ///   - value: A binding to the current value of the slider.
   ///   - stride: The amount to increment or decrement the value per scroll unit. Default is `1`.
   ///   - valueRange: The range of allowable values for the slider.
   ///     Default is from `-Double.greatestFiniteMagnitude` to `Double.greatestFiniteMagnitude`.
+  ///   - primaryTickMark: A view builder that creates the primary tick mark (used for the first tick in each segment).
+  ///   - secondaryTickMark: A view builder that creates the secondary tick marks.
   public init(
     value: Binding<Double>,
     stride: Double = 1,
-    valueRange: ClosedRange<Double> = (-Double.greatestFiniteMagnitude...Double.greatestFiniteMagnitude)
+    valueRange: ClosedRange<Double> = (-Double.greatestFiniteMagnitude...Double.greatestFiniteMagnitude),
+    @ViewBuilder primaryTickMark: () -> PrimaryTickMark,
+    @ViewBuilder secondaryTickMark: () -> SecondaryTickMark
   ) {
     self.stride = stride
     self.valueRange = valueRange
     self._value = value
+    self.primaryTickMark = primaryTickMark()
+    self.secondaryTickMark = secondaryTickMark()
   }
 
   public var body: some View {
 
     let content = HStack(spacing: 0) {
-      ShortBar()
+      primaryTickMark
         .foregroundStyle(Color.accentColor)
       Group {
         Spacer(minLength: 0)
-        ShortBar()
+        secondaryTickMark
         Spacer(minLength: 0)
-        ShortBar()
+        secondaryTickMark
         Spacer(minLength: 0)
-        ShortBar()
+        secondaryTickMark
         Spacer(minLength: 0)
-        ShortBar()
+        secondaryTickMark
         Spacer(minLength: 0)
       }
       .foregroundStyle(Color.accentColor.secondary)
@@ -193,20 +212,55 @@ public struct RingSlider: View {
       )
   }
 
-  // MARK: - nested types
+}
 
-  struct Bar: View {
-    var body: some View {
-      RoundedRectangle(cornerRadius: 8)
-        .frame(width: 3, height: 30)
-    }
+/// The default primary tick mark view used by `RingSlider`.
+///
+/// A rounded rectangle with 3pt width, typically used for the first tick in each segment.
+public struct DefaultPrimaryTickMark: View {
+  public init() {}
+
+  public var body: some View {
+    RoundedRectangle(cornerRadius: 8)
+      .frame(width: 3)
   }
+}
 
-  struct ShortBar: View {
-    var body: some View {
-      RoundedRectangle(cornerRadius: 8)
-        .frame(width: 3, height: 20)
-    }
+/// The default secondary tick mark view used by `RingSlider`.
+///
+/// A rounded rectangle with 3pt width, used for secondary ticks between primary ticks.
+public struct DefaultSecondaryTickMark: View {
+  public init() {}
+
+  public var body: some View {
+    RoundedRectangle(cornerRadius: 8)
+      .frame(width: 3)
+  }
+}
+
+// MARK: - Backward Compatible Initializer
+
+extension RingSlider {
+
+  /// Creates a new ring slider with default tick marks.
+  ///
+  /// - Parameters:
+  ///   - value: A binding to the current value of the slider.
+  ///   - stride: The amount to increment or decrement the value per scroll unit. Default is `1`.
+  ///   - valueRange: The range of allowable values for the slider.
+  ///     Default is from `-Double.greatestFiniteMagnitude` to `Double.greatestFiniteMagnitude`.
+  public init(
+    value: Binding<Double>,
+    stride: Double = 1,
+    valueRange: ClosedRange<Double> = (-Double.greatestFiniteMagnitude...Double.greatestFiniteMagnitude)
+  ) where PrimaryTickMark == DefaultPrimaryTickMark, SecondaryTickMark == DefaultSecondaryTickMark {
+    self.init(
+      value: value,
+      stride: stride,
+      valueRange: valueRange,
+      primaryTickMark: { DefaultPrimaryTickMark() },
+      secondaryTickMark: { DefaultSecondaryTickMark() }
+    )
   }
 }
 
@@ -226,30 +280,53 @@ private struct Demo: View {
 
 }
 
-#Preview {
+#Preview("Default") {
   Demo()
 }
 
-#Preview {
+#Preview("Default Tick Marks") {
   HStack(spacing: 0) {
     ForEach(0..<6) { i in
       HStack(spacing: 0) {
-        //                    Spacer(minLength: 0)
-
-        RingSlider.Bar()
+        DefaultPrimaryTickMark()
           .foregroundColor(.red)
         Spacer(minLength: 0)
-        RingSlider.ShortBar()
+        DefaultSecondaryTickMark()
         Spacer(minLength: 0)
-        RingSlider.ShortBar()
+        DefaultSecondaryTickMark()
         Spacer(minLength: 0)
-        RingSlider.ShortBar()
+        DefaultSecondaryTickMark()
         Spacer(minLength: 0)
-        RingSlider.ShortBar()
+        DefaultSecondaryTickMark()
         Spacer(minLength: 0)
       }
     }
   }
   .background(Color.blue)
 }
+
+#Preview("Custom Tick Marks") {
+  struct CustomDemo: View {
+    @State var value: Double = 0
+
+    var body: some View {
+      VStack {
+        Text("\(String(format: "%.2f", value))")
+        RingSlider(
+          value: $value,
+          primaryTickMark: {
+            Circle()
+              .frame(width: 6, height: 6)
+          },
+          secondaryTickMark: {
+            Circle()
+              .frame(width: 3, height: 3)
+          }
+        )
+      }
+    }
+  }
+  return CustomDemo()
+}
+
 #endif
