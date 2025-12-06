@@ -94,7 +94,7 @@ public init(
 |-----------|------|---------|-------------|
 | `value` | `Binding<Double>` | Required | A binding to the current value of the slider |
 | `stride` | `Double` | `1` | The amount to increment/decrement the value per scroll unit |
-| `valueRange` | `ClosedRange<Double>` | `-∞...∞` | The range of allowable values for the slider |
+| `valueRange` | `ClosedRange<Double>` | Full `Double` range | The range of allowable values for the slider |
 
 ## Dependencies
 

@@ -63,7 +63,7 @@ public struct RingSlider: View {
   ///   - value: A binding to the current value of the slider.
   ///   - stride: The amount to increment or decrement the value per scroll unit. Default is `1`.
   ///   - valueRange: The range of allowable values for the slider.
-  ///     Default is the full range of `Double` values.
+  ///     Default is from `-Double.greatestFiniteMagnitude` to `Double.greatestFiniteMagnitude`.
   public init(
     value: Binding<Double>,
     stride: Double = 1,
